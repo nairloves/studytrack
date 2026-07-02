@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="StudyTrack"/>
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;StudyTrack&quot;,&quot;short_name&quot;:&quot;StudyTrack&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;background_color&quot;:&quot;%23050d1a&quot;,&quot;theme_color&quot;:&quot;%23050d1a&quot;}"/>
+<meta name="theme-color" content="#050d1a"/>
+<title>StudyTrack</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230a1628'/%3E%3Ccircle cx='256' cy='210' r='100' fill='none' stroke='%233b82f6' stroke-width='28'/%3E%3Cpath d='M174 210 a82 82 0 0 1 164 0' fill='%233b82f6'/%3E%3Ctext x='256' y='222' text-anchor='middle' fill='white' font-size='72' font-weight='900' font-family='Inter,sans-serif'%3EST%3C/text%3E%3Ctext x='256' y='390' text-anchor='middle' fill='%2360a5fa' font-size='52' font-weight='700' font-family='Inter,sans-serif'%3Estudy%3C/text%3E%3C/svg%3E"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230a1628'/%3E%3Ccircle cx='256' cy='210' r='100' fill='none' stroke='%233b82f6' stroke-width='28'/%3E%3Ctext x='256' y='240' text-anchor='middle' fill='white' font-size='100' font-weight='900' font-family='Inter,sans-serif'%3EST%3C/text%3E%3Ctext x='256' y='390' text-anchor='middle' fill='%2360a5fa' font-size='52' font-weight='700' font-family='Inter,sans-serif'%3Estudy%3C/text%3E%3C/svg%3E"/>
+<style>
+  :root {
+    --bg: #050d1a;
+    --bg2: #0a1628;
+    --bg3: #0f1e38;
+    --border: #1a2d4a;
+    --border2: #1e3560;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --accent-glow: rgba(59,130,246,0.18);
+    --text: #e8f0fe;
+    --text2: #7a9cc0;
+    --text3: #3a5a80;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --gold: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; min-height: 100vh; overflow-x: hidden; }
+  button { cursor: pointer; font-family: inherit; }
+  input, textarea, select { font-family: inherit; }
+
+  /* SCREENS */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; }
+
+  /* LOGIN */
+  #loginScreen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px 24px;
+    background: radial-gradient(ellipse at 50% 30%, #0d2040 0%, #050d1a 70%);
+  }
+  #loginScreen.active { display: flex; }
+  .login-logo { font-size: 38px; font-weight: 900; color: var(--accent2); letter-spacing: -1px; margin-bottom: 0; line-height: 1.1; }
+  .login-sub { font-size: 13px; color: var(--text3); margin-bottom: 56px; margin-top: 6px; letter-spacing: 0.5px; }
+  .login-card {
+    width: 100%; max-width: 340px;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(59,130,246,0.08);
+  }
+  .login-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+  .login-card p { font-size: 13px; color: var(--text2); margin-bottom: 28px; line-height: 1.6; }
+  .guest-btn {
+    width: 100%; padding: 15px;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    border: none; border-radius: 12px;
+    color: #fff; font-size: 16px; font-weight: 700;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 20px rgba(59,130,246,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .guest-btn:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(59,130,246,0.2); }
+  .login-note { font-size: 11px; color: var(--text3); margin-top: 16px; }
+
+  /* HEADER */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px 12px;
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-left { display: flex; align-items: baseline; gap: 6px; }
+  .header-logo { font-size: 20px; font-weight: 900; color: var(--accent2); letter-spacing: -0.5px; }
+  .header-by { font-size: 11px; color: var(--text3); font-weight: 500; }
+  .header-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .back-btn { background: none; border: none; color: var(--accent2); font-size: 22px; padding: 0 8px 0 0; }
+  .add-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    border: none; color: #fff; font-size: 22px; font-weight: 300;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.3);
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 50;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 10px 4px 8px;
+    background: none; border: none;
+    color: var(--text3); font-size: 10px; font-weight: 600;
+    gap: 4px; transition: color 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .nav-item.active { color: var(--accent2); }
+  .nav-icon { font-size: 20px; line-height: 1; }
+
+  /* PAGE CONTENT */
+  .page-content { padding: 0 16px 100px; max-width: 520px; margin: 0 auto; }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-top: 14px;
+  }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--text2); letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 12px; }
+
+  /* PROGRESS RING */
+  .ring-wrap { display: flex; align-items: center; gap: 18px; }
+  .ring-info h3 { font-size: 28px; font-weight: 900; color: var(--text); line-height: 1; }
+  .ring-info p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .ring-info small { font-size: 11px; color: var(--text3); }
+
+  /* SUBJECT CARDS */
+  .subject-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px;
+    margin-top: 10px; cursor: pointer;
+    display: flex; align-items: center; gap: 14px;
+    transition: border-color 0.2s;
+  }
+  .subject-card:active { border-color: var(--accent); }
+  .subject-info { flex: 1; min-width: 0; }
+  .subject-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .subject-meta { font-size: 12px; color: var(--text3); }
+  .subject-bar { margin-top: 8px; background: var(--bg3); border-radius: 6px; height: 5px; overflow: hidden; }
+  .subject-bar-fill { height: 100%; background: linear-gradient(90deg, #1d4ed8, #60a5fa); border-radius: 6px; transition: width 0.5s ease; }
+  .chevron { color: var(--text3); font-size: 18px; }
+
+  /* COUNTDOWN CARDS */
+  .countdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .countdown-card {
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 14px; padding: 16px 14px; text-align: center;
+  }
+  .countdown-card.boards { border-color: #3b82f6; background: rgba(59,130,246,0.06); }
+  .countdown-card.ca { border-color: var(--gold); background: rgba(245,158,11,0.06); }
+  .countdown-days { font-size: 38px; font-weight: 900; line-height: 1; }
+  .countdown-card.boards .countdown-days { color: var(--accent2); }
+  .countdown-card.ca .countdown-days { color: var(--gold); }
+  .countdown-label { font-size: 11px; color: var(--text2); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .countdown-date { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  /* GOAL CARDS */
+  .goal-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px; margin-top: 10px;
+  }
+  .goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .goal-label { font-size: 13px; font-weight: 700; color: var(--text2); }
+  .goal-edit-btn { background: none; border: 1px solid var(--border2); border-radius: 8px; color: var(--text2); font-size: 12px; padding: 4px 10px; font-weight: 600; }
+  .goal-text { font-size: 14px; color: var(--text); line-height: 1.5; }
+  .goal-empty { font-size: 13px; color: var(--text3); }
+
+  /* EXAM PORTION */
+  .exam-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px; margin-top: 10px;
+  }
+  .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .exam-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .exam-deadline { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .exam-urgency { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+  .urgency-hot { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .urgency-mid { background: rgba(245,158,11,0.15); color: var(--gold); }
+  .urgency-ok { background: rgba(34,197,94,0.15); color: var(--success); }
+  .exam-progress-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .exam-bar-wrap { flex: 1; background: var(--bg3); border-radius: 6px; height: 7px; overflow: hidden; }
+  .exam-bar-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+  .exam-pct { font-size: 13px; font-weight: 700; color: var(--accent2); min-width: 36px; text-align: right; }
+  .topic-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .topic-row:last-child { border-bottom: none; }
+  .topic-check {
+    width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0;
+    border: 2px solid var(--border2); background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .topic-check.done { background: var(--accent); border-color: var(--accent); }
+  .topic-name { flex: 1; font-size: 13px; color: var(--text); }
+  .topic-name.done { color: var(--text3); text-decoration: line-through; }
+  .topic-del { background: none; border: none; color: var(--text3); font-size: 16px; padding: 0 4px; }
+
+  /* INPUTS */
+  .input {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 11px 14px; color: var(--text);
+    font-size: 14px; outline: none;
+  }
+  .input:focus { border-color: var(--accent); }
+  .textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+  select.input { appearance: none; }
+
+  /* BUTTONS */
+  .btn-primary {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    border: none; border-radius: 10px;
+    color: #fff; font-size: 14px; font-weight: 700;
+    padding: 12px; width: 100%;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.25);
+  }
+  .btn-secondary {
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 10px; color: var(--text2);
+    font-size: 14px; font-weight: 600;
+    padding: 12px; width: 100%;
+  }
+  .btn-danger {
+    background: none; border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px; color: var(--danger);
+    font-size: 13px; font-weight: 600;
+    padding: 11px; width: 100%;
+  }
+  .btn-sm {
+    background: var(--accent); border: none; border-radius: 8px;
+    color: #fff; font-size: 13px; font-weight: 700;
+    padding: 7px 14px;
+  }
+  .btn-outline-sm {
+    background: none; border: 1px solid var(--border2); border-radius: 8px;
+    color: var(--text2); font-size: 13px; font-weight: 600;
+    padding: 7px 12px;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 200;
+    align-items: flex-end; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 24px 20px;
+    width: 100%; max-width: 480px;
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+  .modal h3 { font-size: 17px; font-weight: 700; color: var(--accent2); margin-bottom: 18px; }
+  .field-gap { margin-bottom: 12px; }
+  .field-label { font-size: 12px; color: var(--text2); font-weight: 600; margin-bottom: 6px; letter-spacing: 0.3px; }
+  .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-row > * { flex: 1; }
+
+  /* DETAIL VIEW */
+  #detailScreen { background: var(--bg); }
+  .detail-hero {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 16px 18px;
+  }
+  .detail-stats { display: flex; gap: 12px; margin-top: 12px; }
+  .stat-pill {
+    background: var(--bg3); border-radius: 8px;
+    padding: 6px 12px; font-size: 12px; color: var(--text2);
+  }
+  .stat-pill span { font-weight: 700; color: var(--text); }
+
+  /* EMPTY STATES */
+  .empty { text-align: center; color: var(--text3); font-size: 13px; padding: 24px 0; }
+
+  /* SECTION HEADER ROW */
+  .sec-row { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 10px; }
+  .sec-title { font-size: 15px; font-weight: 700; color: var(--text); }
+
+  /* CHAPTER IN DETAIL */
+  .ch-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg3); border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 8px;
+    border: 1px solid var(--border);
+  }
+  .ch-row.done-ch { opacity: 0.6; }
+
+  /* NOTES */
+  .notes-box {
+    background: var(--bg3); border-radius: 10px;
+    padding: 12px 14px; font-size: 14px; color: var(--text2);
+    line-height: 1.6; white-space: pre-wrap; min-height: 48px;
+  }
+
+  /* ADD INLINE ROW */
+  .add-inline { display: flex; gap: 8px; margin-top: 8px; }
+  .add-inline input { flex: 1; }
+
+  /* SCROLLABLE */
+  .scroll-content { padding-bottom: 100px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="screen">
+  <div class="login-logo">StudyTrack</div>
+  <div style="font-size:22px;font-weight:600;color:var(--text2);margin-top:6px;letter-spacing:1px;">— by nair</div>
+  <div class="login-sub" style="margin-top:6px;">your personal study companion</div>
+  <div class="login-card">
+    <h2>Welcome 👋</h2>
+    <p>No accounts, no passwords.<br/>Just you and your study goals.</p>
+    <button class="guest-btn" onclick="guestLogin()">Continue as Guest</button>
+    <div class="login-note">Your data stays on this device.</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+
+  <!-- HEADER -->
+  <div class="header" id="mainHeader">
+    <div>
+      <div class="header-left">
+        <button class="back-btn" id="backBtn" onclick="goBack()" style="display:none;">←</button>
+        <span class="header-logo">StudyTrack</span>
+        <span class="header-by">— by nair</span>
+      </div>
+      <div class="header-sub" id="headerSub">Overview</div>
+    </div>
+    <button class="add-btn" id="addBtn" onclick="showAddSubject()">+</button>
+  </div>
+
+  <!-- TAB: OVERVIEW -->
+  <div id="overviewTab" class="page-content scroll-content" style="padding-top:14px;">
+
+    <!-- Overall Progress -->
+    <div class="card">
+      <div class="card-title">Overall Progress</div>
+      <div class="ring-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72" id="overallRingSvg">
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#0f1e38" stroke-width="6"/>
+          <circle id="overallRingFill" cx="36" cy="36" r="28" fill="none" stroke="#3b82f6" stroke-width="6"
+            stroke-dasharray="175.93" stroke-dashoffset="175.93" stroke-linecap="round" transform="rotate(-90 36 36)"
+            style="transition:stroke-dashoffset 0.5s ease"/>
+          <text id="overallRingText" x="36" y="40" text-anchor="middle" fill="#60a5fa"
+            style="font-size:13px;font-weight:700;font-family:Inter,sans-serif">0%</text>
+        </svg>
+        <div class="ring-info">
+          <h3 id="overallPct">0%</h3>
+          <p id="overallLabel">0 of 0 chapters done</p>
+          <small id="subjectCount">0 subjects</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Countdowns -->
+    <div style="margin-top:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="sec-title">Exam Countdowns</span>
+        <button class="btn-outline-sm" onclick="openModal('countdownModal')">Edit Dates</button>
+      </div>
+      <div class="countdown-grid">
+        <div class="countdown-card boards">
+          <div class="countdown-days" id="boardsDays">—</div>
+          <div class="countdown-label">Boards</div>
+          <div class="countdown-date" id="boardsDate">Not set</div>
+        </div>
+        <div class="countdown-card ca">
+          <div class="countdown-days" id="caDays">—</div>
+          <div class="countdown-label">CA Exam</div>
+          <div class="countdown-date" id="caDate">Not set</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Goal -->
+    <div class="goal-card">
+      <div class="goal-header">
+        <span class="goal-label">📌 Today's Goal</span>
+        <button class="goal-edit-btn" onclick="openGoalModal('today')">Edit</button>
+      </div>
+      <div id="todayGoalText" class="goal-empty">No goal set for today. Tap Edit.</div>
+    </div>
+
+    <!-- Monthly Target -->
+    <div class="goal-card">
+      <div class="goal-header">
+        <span class="goal-label">🎯 Monthly Target</span>
+        <button class="goal-edit-btn" onclick="openGoalModal('monthly')">Edit</button>
+      </div>
+      <div id="monthlyGoalText" class="goal-empty">No monthly target set. Tap Edit.</div>
+    </div>
+
+    <!-- Subjects -->
+    <div class="sec-row">
+      <span class="sec-title">Subjects</span>
+    </div>
+    <div id="subjectsList"></div>
+  </div>
+
+  <!-- TAB: EXAM PORTION -->
+  <div id="examTab" class="page-content scroll-content" style="display:none;padding-top:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div>
+        <div class="sec-title">Portion Tracker</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Track what you need to finish before each exam</div>
+      </div>
+      <button class="btn-sm" onclick="openModal('addExamModal')">+ Exam</button>
+    </div>
+    <div id="examsList"></div>
+  </div>
+
+  <!-- TAB: DETAIL (subject) -->
+  <div id="detailTab" style="display:none;" class="scroll-content">
+    <div class="detail-hero" id="detailHero"></div>
+    <div class="page-content" style="padding-top:0;">
+      <div class="sec-row">
+        <span class="sec-title">Chapters / Topics</span>
+        <button class="btn-sm" onclick="showAddChapter()">+ Add</button>
+      </div>
+      <div id="addChapterRow" style="display:none;" class="add-inline">
+        <input class="input" id="newChapterInput" placeholder="Chapter or topic name" onkeydown="if(event.key==='Enter')saveChapter();if(event.key==='Escape')cancelAddChapter();"/>
+        <button class="btn-sm" onclick="saveChapter()">Save</button>
+      </div>
+      <div id="chaptersList"></div>
+
+      <div class="sec-row">
+        <span class="sec-title">Notes</span>
+        <button class="btn-outline-sm" id="notesEditBtn" onclick="toggleNotes()">Edit</button>
+      </div>
+      <div id="notesView" class="notes-box"></div>
+      <div id="notesEditWrap" style="display:none;">
+        <textarea class="input textarea" id="notesInput" placeholder="Add notes, formulas, key points…"></textarea>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn-secondary" onclick="cancelNotes()">Cancel</button>
+          <button class="btn-primary" onclick="saveNotes()">Save Notes</button>
+        </div>
+      </div>
+      <div style="height:16px;"></div>
+      <button class="btn-danger" onclick="deleteSubject()">Delete Subject</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" id="navOverview" onclick="switchTab('overview')">
+      <span class="nav-icon">📊</span>Overview
+    </button>
+    <button class="nav-item" id="navExam" onclick="switchTab('exam')">
+      <span class="nav-icon">📋</span>Portions
+    </button>
+  </div>
+</div>
+
+<!-- MODALS -->
+
+<!-- Add Subject -->
+<div class="modal-overlay" id="addSubjectModal">
+  <div class="modal">
+    <h3>Add Subject</h3>
+    <div class="field-gap">
+      <div class="field-label">Subject Name</div>
+      <input class="input" id="newSubName" placeholder="e.g. Accounts" onkeydown="if(event.key==='Enter')saveSubject()"/>
+    </div>
+    <div class="field-gap">
+      <div class="field-label">Stream</div>
+      <select class="input" id="newSubStream">
+        <option>CA Foundation</option>
+        <option>SYJC</option>
+        <option>French</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeModal('addSubjectModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveSubject()">Add Subject</button>
+    </div>
+  </div>
+</div>
+
+<!-- Goal Modal -->
+<div class="modal-overlay" id="goalModal">
+  <div class="modal">
+    <h3 id="goalModalTitle">Today's Goal</h3>
+    <div class="field-gap">
+      <textarea class="input textarea" id="goalInput" placeholder="What do you want to achieve?"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeModal('goalModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveGoal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Countdown Modal -->
+<div class="modal-overlay" id="countdownModal">
+  <div class="modal">
+    <h3>Set Exam Dates</h3>
+    <div class="field-gap">
+      <div class="field-label">Boards Exam Date</div>
+      <input class="input" type="date" id="boardsDateInput"/>
+    </div>
+    <div class="field-gap">
+      <div class="field-label">CA Exam Date</div>
+      <input class="input" type="date" id="caDateInput"/>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeModal('countdownModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveCountdowns()">Save Dates</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Exam Portion -->
+<div class="modal-overlay" id="addExamModal">
+  <div class="modal">
+    <h3>Add Exam Portion</h3>
+    <div class="field-gap">
+      <div class="field-label">Exam Name</div>
+      <input class="input" id="examName" placeholder="e.g. CA Foundation Nov 2025"/>
+    </div>
+    <div class="field-gap">
+      <div class="field-label">Exam Date</div>
+      <input class="input" type="date" id="examDate"/>
+    </div>
+    <div class="field-gap">
+      <div class="field-label">Subject</div>
+      <select class="input" id="examSubject"></select>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeModal('addExamModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveExam()">Add Exam</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Topic to Exam -->
+<div class="modal-overlay" id="addTopicModal">
+  <div class="modal">
+    <h3>Add Topic to Portion</h3>
+    <div class="field-gap">
+      <input class="input" id="newTopicInput" placeholder="Topic or chapter name" onkeydown="if(event.key==='Enter')saveTopic()"/>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeModal('addTopicModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveTopic()">Add Topic</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+let data = {
+  guest: true,
+  subjects: [
+    { id: 1, name: "CA Foundation", stream: "CA Foundation", chapters: [], notes: "" },
+    { id: 2, name: "SYJC", stream: "SYJC", chapters: [], notes: "" },
+    { id: 3, name: "French", stream: "French", chapters: [], notes: "" }
+  ],
+  todayGoal: "",
+  monthlyGoal: "",
+  boardsDate: "",
+  caDate: "",
+  exams: [],
+  activeTab: "overview"
+};
+
+let activeSubjectId = null;
+let activeGoalType = null;
+let activeExamId = null;
+
+function load() {
+  const raw = localStorage.getItem("studytrack_v2");
+  if (raw) { try { data = JSON.parse(raw); } catch(e){} }
+}
+function save() { localStorage.setItem("studytrack_v2", JSON.stringify(data)); }
+
+// ===== INIT =====
+window.onload = function() {
+  load();
+  if (data.guest) {
+    showApp();
+  } else {
+    document.getElementById("loginScreen").classList.add("active");
+  }
+};
+
+function guestLogin() {
+  data.guest = true;
+  save();
+  showApp();
+}
+
+function showApp() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  renderOverview();
+  renderExams();
+}
+
+// ===== TABS =====
+function switchTab(tab) {
+  data.activeTab = tab;
+  document.getElementById("overviewTab").style.display = tab === "overview" ? "block" : "none";
+  document.getElementById("examTab").style.display = tab === "exam" ? "block" : "none";
+  document.getElementById("detailTab").style.display = "none";
+  document.getElementById("bottomNav").style.display = "flex";
+  document.getElementById("backBtn").style.display = "none";
+  document.getElementById("addBtn").style.display = tab === "overview" ? "flex" : "none";
+  document.getElementById("headerSub").textContent = tab === "overview" ? "Overview" : "Exam Portions";
+  document.getElementById("navOverview").className = "nav-item" + (tab === "overview" ? " active" : "");
+  document.getElementById("navExam").className = "nav-item" + (tab === "exam" ? " active" : "");
+  if (tab === "overview") renderOverview();
+  if (tab === "exam") renderExams();
+}
+
+// ===== OVERVIEW =====
+function renderOverview() {
+  const totalCh = data.subjects.reduce((a,s)=>a+s.chapters.length,0);
+  const doneCh = data.subjects.reduce((a,s)=>a+s.chapters.filter(c=>c.done).length,0);
+  const pct = totalCh ? Math.round(doneCh/totalCh*100) : 0;
+  const circ = 2 * Math.PI * 28;
+  const offset = circ - (pct/100)*circ;
+  document.getElementById("overallRingFill").style.strokeDashoffset = offset;
+  document.getElementById("overallRingText").textContent = pct + "%";
+  document.getElementById("overallPct").textContent = pct + "%";
+  document.getElementById("overallLabel").textContent = doneCh + " of " + totalCh + " chapters done";
+  document.getElementById("subjectCount").textContent = data.subjects.length + " subject" + (data.subjects.length!==1?"s":"");
+
+  // Countdowns
+  renderCountdowns();
+
+  // Goals
+  const tg = document.getElementById("todayGoalText");
+  tg.textContent = data.todayGoal || "No goal set for today. Tap Edit.";
+  tg.className = data.todayGoal ? "goal-text" : "goal-empty";
+  const mg = document.getElementById("monthlyGoalText");
+  mg.textContent = data.monthlyGoal || "No monthly target set. Tap Edit.";
+  mg.className = data.monthlyGoal ? "goal-text" : "goal-empty";
+
+  // Subjects
+  const list = document.getElementById("subjectsList");
+  if (!data.subjects.length) { list.innerHTML = '<div class="empty">No subjects yet. Tap + to add one.</div>'; return; }
+  list.innerHTML = data.subjects.map(s => {
+    const total = s.chapters.length, done = s.chapters.filter(c=>c.done).length;
+    const p = total ? Math.round(done/total*100) : 0;
+    const circ = 2*Math.PI*20, off = circ-(p/100)*circ;
+    return `<div class="subject-card" onclick="openSubject(${s.id})">
+      <svg width="52" height="52" viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="20" fill="none" stroke="#0f1e38" stroke-width="5"/>
+        <circle cx="26" cy="26" r="20" fill="none" stroke="#3b82f6" stroke-width="5"
+          stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"
+          stroke-linecap="round" transform="rotate(-90 26 26)" style="transition:stroke-dashoffset 0.5s"/>
+        <text x="26" y="30" text-anchor="middle" fill="#60a5fa" style="font-size:10px;font-weight:700;font-family:Inter,sans-serif">${p}%</text>
+      </svg>
+      <div class="subject-info">
+        <div class="subject-name">${s.name}</div>
+        <div class="subject-meta">${s.stream}</div>
+        <div class="subject-bar"><div class="subject-bar-fill" style="width:${p}%"></div></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">${done}/${total} chapters${s.notes?' · notes':''}</div>
+      </div>
+      <div class="chevron">›</div>
+    </div>`;
+  }).join("");
+}
+
+function renderCountdowns() {
+  function daysUntil(dateStr) {
+    if (!dateStr) return null;
+    const d = new Date(dateStr); const now = new Date();
+    now.setHours(0,0,0,0);
+    return Math.ceil((d-now)/(1000*60*60*24));
+  }
+  function fmt(dateStr) {
+    if (!dateStr) return "Not set";
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+  }
+  const bd = daysUntil(data.boardsDate);
+  document.getElementById("boardsDays").textContent = bd !== null ? (bd < 0 ? "Done" : bd) : "—";
+  document.getElementById("boardsDate").textContent = fmt(data.boardsDate);
+  const cd = daysUntil(data.caDate);
+  document.getElementById("caDays").textContent = cd !== null ? (cd < 0 ? "Done" : cd) : "—";
+  document.getElementById("caDate").textContent = fmt(data.caDate);
+}
+
+// ===== GOALS =====
+function openGoalModal(type) {
+  activeGoalType = type;
+  document.getElementById("goalModalTitle").textContent = type === "today" ? "📌 Today's Goal" : "🎯 Monthly Target";
+  document.getElementById("goalInput").value = type === "today" ? data.todayGoal : data.monthlyGoal;
+  openModal("goalModal");
+}
+function saveGoal() {
+  const val = document.getElementById("goalInput").value.trim();
+  if (activeGoalType === "today") data.todayGoal = val;
+  else data.monthlyGoal = val;
+  save(); renderOverview(); closeModal("goalModal");
+}
+
+// ===== COUNTDOWNS =====
+function saveCountdowns() {
+  data.boardsDate = document.getElementById("boardsDateInput").value;
+  data.caDate = document.getElementById("caDateInput").value;
+  save(); renderCountdowns(); closeModal("countdownModal");
+}
+function openModal(id) {
+  if (id === "countdownModal") {
+    document.getElementById("boardsDateInput").value = data.boardsDate;
+    document.getElementById("caDateInput").value = data.caDate;
+  }
+  if (id === "addExamModal") {
+    const sel = document.getElementById("examSubject");
+    sel.innerHTML = data.subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join("");
+  }
+  document.getElementById(id).classList.add("open");
+}
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+// ===== SUBJECTS =====
+function showAddSubject() { openModal("addSubjectModal"); }
+function saveSubject() {
+  const name = document.getElementById("newSubName").value.trim();
+  if (!name) return;
+  data.subjects.push({ id: Date.now(), name, stream: document.getElementById("newSubStream").value, chapters: [], notes: "" });
+  document.getElementById("newSubName").value = "";
+  save(); renderOverview(); closeModal("addSubjectModal");
+}
+
+// ===== DETAIL VIEW =====
+function openSubject(id) {
+  activeSubjectId = id;
+  const s = data.subjects.find(x=>x.id===id);
+  document.getElementById("overviewTab").style.display = "none";
+  document.getElementById("examTab").style.display = "none";
+  document.getElementById("detailTab").style.display = "block";
+  document.getElementById("bottomNav").style.display = "none";
+  document.getElementById("backBtn").style.display = "inline";
+  document.getElementById("addBtn").style.display = "none";
+  document.getElementById("headerSub").textContent = s.name;
+  renderDetail();
+}
+
+function goBack() {
+  document.getElementById("detailTab").style.display = "none";
+  document.getElementById("bottomNav").style.display = "flex";
+  document.getElementById("backBtn").style.display = "none";
+  document.getElementById("addBtn").style.display = "flex";
+  switchTab(data.activeTab || "overview");
+}
+
+function renderDetail() {
+  const s = data.subjects.find(x=>x.id===activeSubjectId);
+  if (!s) return;
+  const total = s.chapters.length, done = s.chapters.filter(c=>c.done).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const circ = 2*Math.PI*28, off = circ-(pct/100)*circ;
+  document.getElementById("detailHero").innerHTML = `
+    <div class="ring-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="28" fill="none" stroke="#0f1e38" stroke-width="6"/>
+        <circle cx="36" cy="36" r="28" fill="none" stroke="#3b82f6" stroke-width="6"
+          stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"
+          stroke-linecap="round" transform="rotate(-90 36 36)" style="transition:stroke-dashoffset 0.5s"/>
+        <text x="36" y="40" text-anchor="middle" fill="#60a5fa" style="font-size:13px;font-weight:700;font-family:Inter,sans-serif">${pct}%</text>
+      </svg>
+      <div class="ring-info">
+        <h3>${s.name}</h3>
+        <p>${s.stream}</p>
+        <small>${done}/${total} chapters complete</small>
+      </div>
+    </div>`;
+
+  // Chapters
+  const cl = document.getElementById("chaptersList");
+  if (!s.chapters.length) { cl.innerHTML = '<div class="empty">No chapters yet. Tap + Add.</div>'; }
+  else {
+    cl.innerHTML = s.chapters.map(c => `
+      <div class="ch-row ${c.done?'done-ch':''}">
+        <div class="topic-check ${c.done?'done':''}" onclick="toggleChapter(${c.id})">
+          ${c.done?'<span style="color:#fff;font-size:12px;font-weight:800;">✓</span>':''}
+        </div>
+        <span class="topic-name ${c.done?'done':''}">${c.name}</span>
+        <button class="topic-del" onclick="deleteChapter(${c.id})">×</button>
+      </div>`).join("");
+  }
+
+  // Notes
+  const nv = document.getElementById("notesView");
+  nv.textContent = s.notes || "No notes yet. Tap Edit to add some.";
+  nv.style.color = s.notes ? "var(--text2)" : "var(--text3)";
+  document.getElementById("notesEditWrap").style.display = "none";
+  document.getElementById("notesView").style.display = "block";
+  document.getElementById("notesEditBtn").textContent = "Edit";
+}
+
+function showAddChapter() {
+  document.getElementById("addChapterRow").style.display = "flex";
+  document.getElementById("newChapterInput").focus();
+}
+function cancelAddChapter() {
+  document.getElementById("addChapterRow").style.display = "none";
+  document.getElementById("newChapterInput").value = "";
+}
+function saveChapter() {
+  const val = document.getElementById("newChapterInput").value.trim();
+  if (!val) return;
+  const s = data.subjects.find(x=>x.id===activeSubjectId);
+  s.chapters.push({ id: Date.now(), name: val, done: false });
+  document.getElementById("newChapterInput").value = "";
+  document.getElementById("addChapterRow").style.display = "none";
+  save(); renderDetail(); renderOverview();
+}
+function toggleChapter(cid) {
+  const s = data.subjects.find(x=>x.id===activeSubjectId);
+  const c = s.chapters.find(x=>x.id===cid);
+  c.done = !c.done;
+  save(); renderDetail(); renderOverview();
+}
+function deleteChapter(cid) {
+  const s = data.subjects.find(x=>x.id===activeSubjectId);
+  s.chapters = s.chapters.filter(x=>x.id!==cid);
+  save(); renderDetail(); renderOverview();
+}
+function deleteSubject() {
+  if (!confirm("Delete this subject? This can't be undone.")) return;
+  data.subjects = data.subjects.filter(x=>x.id!==activeSubjectId);
+  save(); goBack();
+}
+
+// Notes
+function toggleNotes() {
+  const s = data.subjects.find(x=>x.id===activeSubjectId);
+  const editing = document.getElementById("notesEditWrap").style.display !== "none";
+  if (editing) { cancelNotes(); return; }
+  document.getElementById("notesInput").value = s.notes || "";
+  document.getElementById("notesView").style.display = "none";
+  document.getElementById("notesEditWrap").style.display = "block";
+  document.getElementById("notesEditBtn").textContent = "Cancel";
+}
+function cancelNotes() {
+  document.getElementById("notesView").style.display = "block";
+  document.getElementById("notesEditWrap").style.display = "none";
+  document.getElementById("notesEditBtn").textContent = "Edit";
+}
+function saveNotes() {
+  const s = data.subjects.find(x=>x.id===activeSubjectId);
+  s.notes = document.getElementById("notesInput").value.trim();
+  save(); renderDetail();
+}
+
+// ===== EXAM PORTIONS =====
+function saveExam() {
+  const name = document.getElementById("examName").value.trim();
+  const date = document.getElementById("examDate").value;
+  const subId = parseInt(document.getElementById("examSubject").value);
+  if (!name || !date) return;
+  data.exams.push({ id: Date.now(), name, date, subjectId: subId, topics: [] });
+  document.getElementById("examName").value = "";
+  document.getElementById("examDate").value = "";
+  save(); renderExams(); closeModal("addExamModal");
+}
+
+function renderExams() {
+  const list = document.getElementById("examsList");
+  if (!data.exams.length) {
+    list.innerHTML = `<div class="empty" style="margin-top:32px;">
+      No exam portions yet.<br/>Tap "+ Exam" to add one and track your portion.
+    </div>`; return;
+  }
+  list.innerHTML = data.exams.map(ex => {
+    const days = daysUntil(ex.date);
+    const total = ex.topics.length, done = ex.topics.filter(t=>t.done).length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const sub = data.subjects.find(s=>s.id===ex.subjectId);
+    let urgencyClass = "urgency-ok", urgencyLabel = "On track";
+    if (days !== null && days <= 7) { urgencyClass = "urgency-hot"; urgencyLabel = days <= 0 ? "Exam day!" : days + "d left 🔥"; }
+    else if (days !== null && days <= 21) { urgencyClass = "urgency-mid"; urgencyLabel = days + " days left"; }
+    else if (days !== null) { urgencyLabel = days + " days left"; }
+    const barColor = pct >= 80 ? "#22c55e" : pct >= 40 ? "#f59e0b" : "#3b82f6";
+    return `<div class="exam-card">
+      <div class="exam-header">
+        <div>
+          <div class="exam-name">${ex.name}</div>
+          <div class="exam-deadline">${sub?sub.name:'—'} · ${fmtDate(ex.date)}</div>
+        </div>
+        <div>
+          <span class="exam-urgency ${urgencyClass}">${urgencyLabel}</span>
+          <button onclick="deleteExam(${ex.id})" style="background:none;border:none;color:var(--text3);font-size:18px;padding:0 0 0 6px;cursor:pointer;">×</button>
+        </div>
+      </div>
+      <div class="exam-progress-row">
+        <div class="exam-bar-wrap"><div class="exam-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="exam-pct">${pct}%</div>
+      </div>
+      <div>${ex.topics.map(t=>`
+        <div class="topic-row">
+          <div class="topic-check ${t.done?'done':''}" onclick="toggleTopic(${ex.id},${t.id})">
+            ${t.done?'<span style="color:#fff;font-size:11px;font-weight:800;">✓</span>':''}
+          </div>
+          <span class="topic-name ${t.done?'done':''}">${t.name}</span>
+          <button class="topic-del" onclick="deleteTopic(${ex.id},${t.id})">×</button>
+        </div>`).join("")}
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn-outline-sm" style="font-size:12px;" onclick="openAddTopic(${ex.id})">+ Add Topic</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr); const now = new Date();
+  now.setHours(0,0,0,0);
+  return Math.ceil((d-now)/(1000*60*60*24));
+}
+function fmtDate(dateStr) {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+}
+
+function deleteExam(id) {
+  if (!confirm("Delete this exam portion?")) return;
+  data.exams = data.exams.filter(e=>e.id!==id);
+  save(); renderExams();
+}
+
+function openAddTopic(examId) {
+  activeExamId = examId;
+  document.getElementById("newTopicInput").value = "";
+  openModal("addTopicModal");
+}
+function saveTopic() {
+  const val = document.getElementById("newTopicInput").value.trim();
+  if (!val) return;
+  const ex = data.exams.find(e=>e.id===activeExamId);
+  ex.topics.push({ id: Date.now(), name: val, done: false });
+  save(); renderExams(); closeModal("addTopicModal");
+}
+function toggleTopic(exId, tId) {
+  const ex = data.exams.find(e=>e.id===exId);
+  const t = ex.topics.find(x=>x.id===tId);
+  t.done = !t.done;
+  save(); renderExams();
+}
+function deleteTopic(exId, tId) {
+  const ex = data.exams.find(e=>e.id===exId);
+  ex.topics = ex.topics.filter(x=>x.id!==tId);
+  save(); renderExams();
+}
+
+// Close modals on overlay click
+document.querySelectorAll(".modal-overlay").forEach(el => {
+  el.addEventListener("click", function(e) { if(e.target===this) this.classList.remove("open"); });
+});
+</script>
+</body>
+</html>
