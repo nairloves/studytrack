@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="StudyTrack"/>
+<meta name="theme-color" content="#0f0e0c"/>
+<link rel="manifest" href="/studytrack/manifest.json"/>
+<link rel="apple-touch-icon" href="/studytrack/icon.png"/>
+<title>StudyTrack</title>
+<style>
+:root{
+  --bg:#0f0e0c;--bg2:#1a1814;--bg3:#221f1a;
+  --border:#2e2a24;--border2:#3a3428;
+  --accent:#c8a96e;--accent2:#d4b483;
+  --text:#f0ebe3;--text2:#9a8f7e;--text3:#5a5248;
+  --danger:#c0614a;--success:#6a9e6a;--gold:#c8a040;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',system-ui,sans-serif;min-height:100vh;overflow-x:hidden;}
+button{cursor:pointer;font-family:inherit;}
+input,textarea,select{font-family:inherit;}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:9999;background:#0f0e0c;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.7s ease;overflow:hidden;}
+#splash.fade-out{opacity:0;pointer-events:none;}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.08;animation:orbf 5s ease-in-out infinite alternate;}
+.orb1{width:280px;height:280px;background:#8b6914;top:-80px;left:-80px;}
+.orb2{width:220px;height:220px;background:#6b4f1a;bottom:-60px;right:-60px;animation-delay:1.5s;}
+@keyframes orbf{from{transform:scale(1);}to{transform:scale(1.15) translate(15px,15px);}}
+.splash-icon{animation:pop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.2s forwards;opacity:0;margin-bottom:28px;}
+.splash-title{font-size:38px;font-weight:900;color:#f0ebe3;letter-spacing:-1.5px;animation:pop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.4s forwards;opacity:0;}
+.splash-title span{color:#d4b483;}
+.splash-by{font-size:15px;color:#9a8f7e;letter-spacing:1px;margin-top:6px;animation:pop 0.7s ease 0.55s forwards;opacity:0;}
+.splash-bar-wrap{margin-top:48px;width:140px;height:2px;background:rgba(200,169,110,0.15);border-radius:2px;overflow:hidden;animation:pop 0.5s ease 0.7s forwards;opacity:0;}
+.splash-bar{height:100%;width:0;background:linear-gradient(90deg,#a07828,#d4b483);border-radius:2px;animation:fillb 2.2s ease 0.8s forwards;}
+@keyframes fillb{from{width:0;}to{width:100%;}}
+@keyframes pop{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+/* HEADER */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 18px 12px;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;}
+.header-logo{font-size:20px;font-weight:900;color:var(--accent2);letter-spacing:-0.5px;}
+.header-by{font-size:11px;color:var(--text3);margin-left:6px;}
+.header-sub{font-size:12px;color:var(--text3);margin-top:1px;}
+.back-btn{background:none;border:none;color:var(--accent2);font-size:22px;padding:0 8px 0 0;}
+.add-btn{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#8b6914,#c8a96e);border:none;color:#0f0e0c;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(200,169,110,0.2);}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:50;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;background:none;border:none;color:var(--text3);font-size:10px;font-weight:600;gap:4px;letter-spacing:0.3px;}
+.nav-item.active{color:var(--accent2);}
+.nav-icon{font-size:19px;}
+
+/* CONTENT */
+.page{padding:0 16px 100px;max-width:520px;margin:0 auto;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin-top:14px;}
+.card-title{font-size:12px;font-weight:700;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:12px;}
+.sec-row{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px;}
+.sec-title{font-size:15px;font-weight:700;color:var(--text);}
+.empty{text-align:center;color:var(--text3);font-size:13px;padding:28px 0;}
+
+/* STREAM */
+.stream-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-top:10px;cursor:pointer;transition:border-color 0.2s;}
+.stream-card:active{border-color:var(--accent);}
+.stream-name{font-size:17px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.stream-meta{font-size:12px;color:var(--text3);}
+.prog-bar-wrap{margin-top:10px;background:var(--bg3);border-radius:6px;height:5px;overflow:hidden;}
+.prog-bar{height:100%;background:linear-gradient(90deg,#8b6914,#d4b483);border-radius:6px;transition:width 0.5s;}
+
+/* SUBJECT */
+.subject-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:8px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color 0.2s;}
+.subject-card:active{border-color:var(--accent);}
+.subject-name{font-size:15px;font-weight:700;color:var(--text);}
+.subject-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+.subject-pct{font-size:13px;font-weight:800;color:var(--accent2);min-width:36px;text-align:right;}
+
+/* CHAPTERS */
+.ch-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:11px;margin-bottom:7px;border:1px solid var(--border);}
+.ch-name{flex:1;font-size:14px;color:var(--text);font-weight:500;}
+.status-btn{border:none;background:none;font-size:22px;padding:2px 4px;border-radius:8px;transition:transform 0.15s;cursor:pointer;}
+.status-btn:active{transform:scale(0.8);}
+.status-label{font-size:10px;color:var(--text3);text-align:center;min-width:56px;font-weight:600;letter-spacing:0.3px;}
+.ch-del{background:none;border:none;color:var(--text3);font-size:16px;padding:2px 4px;}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.legend-item{font-size:11px;color:var(--text2);}
+
+/* RING */
+.ring-wrap{display:flex;align-items:center;gap:18px;}
+.ring-info h3{font-size:28px;font-weight:900;color:var(--text);line-height:1;}
+.ring-info p{font-size:13px;color:var(--text2);margin-top:4px;}
+.ring-info small{font-size:11px;color:var(--text3);}
+
+/* COUNTDOWN */
+.countdown-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.cd-card{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:16px 14px;text-align:center;}
+.cd-card.boards{border-color:#8b6914;background:rgba(139,105,20,0.06);}
+.cd-card.ca{border-color:var(--gold);background:rgba(200,160,64,0.06);}
+.cd-days{font-size:36px;font-weight:900;line-height:1;color:var(--accent2);}
+.cd-label{font-size:11px;color:var(--text2);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.cd-date{font-size:11px;color:var(--text3);margin-top:3px;}
+
+/* GOAL */
+.goal-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-top:10px;}
+.goal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.goal-label{font-size:13px;font-weight:700;color:var(--text2);}
+.goal-edit-btn{background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:12px;padding:4px 10px;font-weight:600;}
+
+/* TEST */
+.test-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-top:10px;}
+.test-card.urgent{border-color:var(--danger);background:rgba(192,97,74,0.05);}
+.test-card.soon{border-color:var(--gold);background:rgba(200,160,64,0.05);}
+.test-name{font-size:15px;font-weight:700;color:var(--text);}
+.test-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+.test-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.b-urgent{background:rgba(192,97,74,0.15);color:var(--danger);}
+.b-soon{background:rgba(200,160,64,0.15);color:var(--gold);}
+.b-ok{background:rgba(106,158,106,0.15);color:var(--success);}
+.test-date{font-size:12px;color:var(--text2);margin-top:8px;}
+
+/* EXAM */
+.exam-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-top:10px;}
+.exam-name{font-size:15px;font-weight:700;color:var(--text);}
+.urgency{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;}
+.u-hot{background:rgba(192,97,74,0.15);color:var(--danger);}
+.u-mid{background:rgba(200,160,64,0.15);color:var(--gold);}
+.u-ok{background:rgba(106,158,106,0.15);color:var(--success);}
+.exam-prog-row{display:flex;align-items:center;gap:10px;margin:10px 0;}
+.exam-bar-wrap{flex:1;background:var(--bg3);border-radius:6px;height:7px;overflow:hidden;}
+.exam-bar{height:100%;border-radius:6px;transition:width 0.5s;}
+.exam-pct{font-size:13px;font-weight:700;color:var(--accent2);min-width:36px;text-align:right;}
+.topic-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.topic-row:last-child{border-bottom:none;}
+.topic-check{width:20px;height:20px;border-radius:5px;flex-shrink:0;border:2px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.topic-check.done{background:var(--accent);border-color:var(--accent);}
+.topic-name{flex:1;font-size:13px;color:var(--text);}
+.topic-name.done{color:var(--text3);text-decoration:line-through;}
+.topic-del{background:none;border:none;color:var(--text3);font-size:16px;padding:0 4px;cursor:pointer;}
+
+/* NOTIF */
+#notifBanner{position:fixed;top:0;left:0;right:0;z-index:999;background:linear-gradient(135deg,#2a2218,#3a3028);color:var(--text);border-bottom:1px solid var(--accent);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.4);transform:translateY(-100%);transition:transform 0.4s ease;}
+#notifBanner.show{transform:translateY(0);}
+.notif-close{background:none;border:none;color:var(--text2);font-size:18px;padding:0;cursor:pointer;}
+
+/* INPUTS */
+.input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;outline:none;}
+.input:focus{border-color:var(--accent);}
+.textarea{resize:vertical;min-height:80px;line-height:1.6;}
+
+/* BUTTONS */
+.btn-primary{background:linear-gradient(135deg,#8b6914,#c8a96e);border:none;border-radius:10px;color:#0f0e0c;font-size:14px;font-weight:700;padding:12px;width:100%;}
+.btn-secondary{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:14px;font-weight:600;padding:12px;width:100%;}
+.btn-danger{background:none;border:1px solid rgba(192,97,74,0.3);border-radius:10px;color:var(--danger);font-size:13px;font-weight:600;padding:11px;width:100%;}
+.btn-sm{background:var(--accent);border:none;border-radius:8px;color:#0f0e0c;font-size:13px;font-weight:700;padding:7px 14px;}
+.btn-outline-sm{background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:13px;font-weight:600;padding:7px 12px;}
+.btn-row{display:flex;gap:10px;margin-top:16px;}
+.btn-row>*{flex:1;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-end;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:24px 20px;width:100%;max-width:480px;margin-bottom:env(safe-area-inset-bottom);}
+.modal h3{font-size:17px;font-weight:700;color:var(--accent2);margin-bottom:18px;}
+.field-gap{margin-bottom:12px;}
+.field-label{font-size:12px;color:var(--text2);font-weight:600;margin-bottom:6px;letter-spacing:0.3px;}
+.add-inline{display:flex;gap:8px;margin-top:8px;margin-bottom:4px;}
+.add-inline input{flex:1;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <svg class="splash-icon" width="90" height="90" viewBox="0 0 90 90">
+    <defs>
+      <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#c8a96e"/>
+        <stop offset="100%" stop-color="#8b6914"/>
+      </linearGradient>
+    </defs>
+    <circle cx="45" cy="45" r="45" fill="url(#sg)"/>
+    <text x="45" y="63" text-anchor="middle" font-family="Georgia,serif" font-size="56" font-weight="700" fill="#0f0e0c">S</text>
+  </svg>
+  <div class="splash-title">study<span>track</span></div>
+  <div class="splash-by">— by nair</div>
+  <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+</div>
+
+<!-- NOTIF -->
+<div id="notifBanner">
+  <span id="notifIcon" style="font-size:20px;flex-shrink:0;">📌</span>
+  <div style="flex:1;">
+    <div id="notifTitle" style="font-size:13px;font-weight:700;margin-bottom:2px;"></div>
+    <div id="notifMsg" style="font-size:12px;opacity:0.9;line-height:1.4;"></div>
+  </div>
+  <button class="notif-close" onclick="closeNotif()">×</button>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+  <div class="header">
+    <div>
+      <div style="display:flex;align-items:baseline;gap:4px;">
+        <button class="back-btn" id="backBtn" onclick="goBack()" style="display:none;">←</button>
+        <span class="header-logo">StudyTrack</span>
+        <span class="header-by">— by nair</span>
+      </div>
+      <div class="header-sub" id="headerSub">Overview</div>
+    </div>
+    <button class="add-btn" id="addBtn" onclick="onAddBtn()">+</button>
+  </div>
+
+  <div id="tabOverview" class="page" style="padding-top:14px;"></div>
+  <div id="tabSubjects" style="display:none;" class="page" style="padding-top:14px;"></div>
+  <div id="tabChapters" style="display:none;" class="page" style="padding-top:14px;"></div>
+  <div id="tabTests" style="display:none;" class="page" style="padding-top:14px;"></div>
+  <div id="tabPortions" style="display:none;" class="page" style="padding-top:14px;"></div>
+
+  <div class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" id="navOv" onclick="switchTab('overview')"><span class="nav-icon">📊</span>Overview</button>
+    <button class="nav-item" id="navTe" onclick="switchTab('tests')"><span class="nav-icon">📝</span>Tests</button>
+    <button class="nav-item" id="navPo" onclick="switchTab('portions')"><span class="nav-icon">📋</span>Portions</button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="addStreamModal">
+  <div class="modal"><h3>Add Stream</h3>
+    <div class="field-gap"><div class="field-label">Stream Name</div><input class="input" id="newStreamName" placeholder="e.g. CA Inter" onkeydown="if(event.key==='Enter')saveStream()"/></div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeModal('addStreamModal')">Cancel</button><button class="btn-primary" onclick="saveStream()">Add Stream</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addSubjectModal">
+  <div class="modal"><h3 id="addSubTitle">Add Subject</h3>
+    <div class="field-gap"><div class="field-label">Subject Name</div><input class="input" id="newSubName" placeholder="e.g. Accounts" onkeydown="if(event.key==='Enter')saveSubject()"/></div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeModal('addSubjectModal')">Cancel</button><button class="btn-primary" onclick="saveSubject()">Add Subject</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="goalModal">
+  <div class="modal"><h3 id="goalTitle">Goal</h3>
+    <div class="field-gap"><textarea class="input textarea" id="goalInput" placeholder="What do you want to achieve?"></textarea></div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeModal('goalModal')">Cancel</button><button class="btn-primary" onclick="saveGoal()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cdModal">
+  <div class="modal"><h3>Set Exam Dates</h3>
+    <div class="field-gap"><div class="field-label">Boards Date</div><input class="input" type="date" id="cdBInput"/></div>
+    <div class="field-gap"><div class="field-label">CA Exam Date</div><input class="input" type="date" id="cdCInput"/></div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeModal('cdModal')">Cancel</button><button class="btn-primary" onclick="saveCDs()">Save Dates</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addTestModal">
+  <div class="modal"><h3>Add Weekly Test</h3>
+    <div class="field-gap"><div class="field-label">Test Name</div><input class="input" id="testName" placeholder="e.g. Accounts Ch3 Test"/></div>
+    <div class="field-gap"><div class="field-label">Subject</div><select class="input" id="testSubject"></select></div>
+    <div class="field-gap"><div class="field-label">Test Date</div><input class="input" type="date" id="testDate"/></div>
+    <div class="field-gap"><div class="field-label">Notes (optional)</div><input class="input" id="testNotes" placeholder="Topics covered..."/></div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeModal('addTestModal')">Cancel</button><button class="btn-primary" onclick="saveTest()">Add Test</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addExamModal">
+  <div class="modal"><h3>Add Exam Portion</h3>
+    <div class="field-gap"><div class="field-label">Exam Name</div><input class="input" id="examName" placeholder="e.g. CA Foundation Nov 2025"/></div>
+    <div class="field-gap"><div class="field-label">Exam Date</div><input class="input" type="date" id="examDate"/></div>
+    <div class="field-gap"><div class="field-label">Subject</div><select class="input" id="examSubject"></select></div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeModal('addExamModal')">Cancel</button><button class="btn-primary" onclick="saveExam()">Add Exam</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addTopicModal">
+  <div class="modal"><h3>Add Topic</h3>
+    <div class="field-gap"><input class="input" id="newTopicInput" placeholder="Topic name" onkeydown="if(event.key==='Enter')saveTopic()"/></div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeModal('addTopicModal')">Cancel</button><button class="btn-primary" onclick="saveTopic()">Add</button></div>
+  </div>
+</div>
+
+<script>
+const STATUSES=[
+  {e:'🌑',l:'Not started',w:0},
+  {e:'🎧',l:'Class done',w:0},
+  {e:'📘',l:'Self studied',w:0.5},
+  {e:'⚡',l:'Revised',w:0.75},
+  {e:'🔥',l:'Mastered',w:1}
+];
+
+let data={
+  streams:[
+    {id:1,name:'CA Foundation',subjects:[
+      {id:11,name:'Accounts',chapters:[]},
+      {id:12,name:'Law',chapters:[]},
+      {id:13,name:'Maths & Statistics',chapters:[]},
+      {id:14,name:'Business Economics',chapters:[]}
+    ]},
+    {id:2,name:'SYJC',subjects:[]},
+    {id:3,name:'French',subjects:[]}
+  ],
+  todayGoal:'',monthlyGoal:'',
+  boardsDate:'',caDate:'',
+  exams:[],tests:[]
+};
+
+let activeStreamId=null,activeSubjectId=null,activeExamId=null,activeGoalType=null;
+
+function load(){try{const r=localStorage.getItem('st_v4');if(r)data=JSON.parse(r);}catch(e){}}
+function save(){localStorage.setItem('st_v4',JSON.stringify(data));}
+
+window.onload=function(){
+  load();
+  document.getElementById('app').style.display='block';
+  setTimeout(()=>{
+    const s=document.getElementById('splash');
+    s.classList.add('fade-out');
+    setTimeout(()=>s.style.display='none',700);
+  },2800);
+  renderOverview();
+  checkNotifs();
+};
+
+function daysUntil(d){if(!d)return null;const n=new Date();n.setHours(0,0,0,0);return Math.ceil((new Date(d)-n)/86400000);}
+function fmtDate(d){if(!d)return'';return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
+function allSubjects(){return data.streams.flatMap(st=>st.subjects.map(s=>({...s,streamName:st.name})));}
+function subPct(sub){
+  if(!sub.chapters.length)return 0;
+  return Math.round(sub.chapters.reduce((a,c)=>a+STATUSES[c.status||0].w,0)/sub.chapters.length*100);
+}
+
+// TABS
+function switchTab(tab){
+  ['tabOverview','tabSubjects','tabChapters','tabTests','tabPortions'].forEach(t=>document.getElementById(t).style.display='none');
+  document.getElementById('bottomNav').style.display='flex';
+  document.getElementById('backBtn').style.display='none';
+  document.getElementById('addBtn').style.display='flex';
+  ['navOv','navTe','navPo'].forEach(n=>document.getElementById(n).className='nav-item');
+  if(tab==='overview'){
+    document.getElementById('tabOverview').style.display='block';
+    document.getElementById('navOv').className='nav-item active';
+    document.getElementById('headerSub').textContent='Overview';
+    document.getElementById('addBtn').onclick=()=>openModal('addStreamModal');
+    renderOverview();
+  }else if(tab==='tests'){
+    document.getElementById('tabTests').style.display='block';
+    document.getElementById('navTe').className='nav-item active';
+    document.getElementById('headerSub').textContent='Weekly Tests';
+    document.getElementById('addBtn').onclick=()=>{popSubSels();openModal('addTestModal');};
+    renderTests();
+  }else if(tab==='portions'){
+    document.getElementById('tabPortions').style.display='block';
+    document.getElementById('navPo').className='nav-item active';
+    document.getElementById('headerSub').textContent='Portion Tracker';
+    document.getElementById('addBtn').onclick=()=>{popSubSels();openModal('addExamModal');};
+    renderExams();
+  }
+}
+
+function openStream(id){
+  activeStreamId=id;
+  const st=data.streams.find(s=>s.id===id);
+  document.getElementById('tabOverview').style.display='none';
+  document.getElementById('tabSubjects').style.display='block';
+  document.getElementById('bottomNav').style.display='none';
+  document.getElementById('backBtn').style.display='inline';
+  document.getElementById('headerSub').textContent=st.name;
+  document.getElementById('addBtn').onclick=()=>{document.getElementById('addSubTitle').textContent='Add Subject — '+st.name;openModal('addSubjectModal');};
+  renderSubjects();
+}
+
+function openSubject(id){
+  activeSubjectId=id;
+  const sub=data.streams.find(s=>s.id===activeStreamId).subjects.find(s=>s.id===id);
+  document.getElementById('tabSubjects').style.display='none';
+  document.getElementById('tabChapters').style.display='block';
+  document.getElementById('headerSub').textContent=sub.name;
+  document.getElementById('addBtn').style.display='none';
+  renderChapters();
+}
+
+function goBack(){
+  if(document.getElementById('tabChapters').style.display!=='none'){
+    document.getElementById('tabChapters').style.display='none';
+    document.getElementById('tabSubjects').style.display='block';
+    document.getElementById('addBtn').style.display='flex';
+    const st=data.streams.find(s=>s.id===activeStreamId);
+    document.getElementById('headerSub').textContent=st.name;
+    document.getElementById('addBtn').onclick=()=>{document.getElementById('addSubTitle').textContent='Add Subject — '+st.name;openModal('addSubjectModal');};
+  }else{
+    document.getElementById('tabSubjects').style.display='none';
+    document.getElementById('tabOverview').style.display='block';
+    document.getElementById('bottomNav').style.display='flex';
+    document.getElementById('backBtn').style.display='none';
+    document.getElementById('headerSub').textContent='Overview';
+    document.getElementById('addBtn').onclick=()=>openModal('addStreamModal');
+    renderOverview();
+  }
+}
+
+function onAddBtn(){openModal('addStreamModal');}
+
+// OVERVIEW
+function renderOverview(){
+  const subs=allSubjects();
+  const totalCh=subs.reduce((a,s)=>a+s.chapters.length,0);
+  const mastered=subs.reduce((a,s)=>a+s.chapters.filter(c=>(c.status||0)===4).length,0);
+  const pct=totalCh?Math.round(mastered/totalCh*100):0;
+  const circ=175.93,off=circ-(pct/100)*circ;
+
+  document.getElementById('tabOverview').innerHTML=`
+    <div class="card">
+      <div class="card-title">Overall Progress</div>
+      <div class="ring-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#221f1a" stroke-width="6"/>
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#c8a96e" stroke-width="6"
+            stroke-dasharray="175.93" stroke-dashoffset="${off.toFixed(2)}"
+            stroke-linecap="round" transform="rotate(-90 36 36)" style="transition:stroke-dashoffset 0.5s"/>
+          <text x="36" y="40" text-anchor="middle" fill="#d4b483" style="font-size:13px;font-weight:700;font-family:Inter,sans-serif">${pct}%</text>
+        </svg>
+        <div class="ring-info">
+          <h3>${pct}%</h3>
+          <p>${mastered} of ${totalCh} chapters mastered</p>
+          <small>${data.streams.length} streams · ${subs.length} subjects</small>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="sec-title">Exam Countdowns</span>
+        <button class="btn-outline-sm" onclick="openCDModal()">Edit Dates</button>
+      </div>
+      <div class="countdown-grid">
+        <div class="cd-card boards"><div class="cd-days">${daysUntil(data.boardsDate)!==null?(daysUntil(data.boardsDate)<0?'Done':daysUntil(data.boardsDate)):'—'}</div><div class="cd-label">Boards</div><div class="cd-date">${fmtDate(data.boardsDate)||'Not set'}</div></div>
+        <div class="cd-card ca"><div class="cd-days" style="color:var(--gold)">${daysUntil(data.caDate)!==null?(daysUntil(data.caDate)<0?'Done':daysUntil(data.caDate)):'—'}</div><div class="cd-label">CA Exam</div><div class="cd-date">${fmtDate(data.caDate)||'Not set'}</div></div>
+      </div>
+    </div>
+
+    <div class="goal-card">
+      <div class="goal-header"><span class="goal-label">📌 Today's Goal</span><button class="goal-edit-btn" onclick="openGoal('today')">Edit</button></div>
+      <div style="font-size:14px;color:${data.todayGoal?'var(--text)':'var(--text3)'};line-height:1.5;">${data.todayGoal||'No goal set. Tap Edit.'}</div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-header"><span class="goal-label">🎯 Monthly Target</span><button class="goal-edit-btn" onclick="openGoal('monthly')">Edit</button></div>
+      <div style="font-size:14px;color:${data.monthlyGoal?'var(--text)':'var(--text3)'};line-height:1.5;">${data.monthlyGoal||'No target set. Tap Edit.'}</div>
+    </div>
+
+    <div class="sec-row"><span class="sec-title">Streams</span></div>
+    ${!data.streams.length?'<div class="empty">No streams yet. Tap + to add one.</div>':data.streams.map(st=>{
+      const stCh=st.subjects.reduce((a,s)=>a+s.chapters.length,0);
+      const stM=st.subjects.reduce((a,s)=>a+s.chapters.filter(c=>(c.status||0)===4).length,0);
+      const stP=stCh?Math.round(stM/stCh*100):0;
+      return `<div class="stream-card" onclick="openStream(${st.id})">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div class="stream-name">${st.name}</div><div class="stream-meta">${st.subjects.length} subjects · ${stM}/${stCh} mastered</div></div>
+          <div style="font-size:20px;font-weight:900;color:var(--accent2)">${stP}%</div>
+        </div>
+        <div class="prog-bar-wrap"><div class="prog-bar" style="width:${stP}%"></div></div>
+        <div style="margin-top:10px;" onclick="event.stopPropagation()">
+          <button class="btn-outline-sm" style="font-size:11px;" onclick="deleteStream(${st.id})">Delete Stream</button>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+}
+
+// SUBJECTS
+function renderSubjects(){
+  const st=data.streams.find(s=>s.id===activeStreamId);
+  document.getElementById('tabSubjects').innerHTML=`
+    <div style="padding-top:14px;">
+      ${!st.subjects.length?'<div class="empty">No subjects yet. Tap + to add one.</div>':st.subjects.map(sub=>{
+        const pct=subPct(sub);
+        const m=sub.chapters.filter(c=>(c.status||0)===4).length;
+        return `<div class="subject-card" onclick="openSubject(${sub.id})">
+          <div style="flex:1;">
+            <div class="subject-name">${sub.name}</div>
+            <div class="subject-meta">${m}/${sub.chapters.length} mastered</div>
+            <div class="prog-bar-wrap" style="margin-top:8px;"><div class="prog-bar" style="width:${pct}%"></div></div>
+          </div>
+          <div class="subject-pct">${pct}%</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// CHAPTERS
+function renderChapters(){
+  const st=data.streams.find(s=>s.id===activeStreamId);
+  const sub=st.subjects.find(s=>s.id===activeSubjectId);
+  document.getElementById('tabChapters').innerHTML=`
+    <div style="padding-top:14px;">
+      <div class="legend">
+        <div class="legend-item">🌑 Not started</div>
+        <div class="legend-item">🎧 Class done</div>
+        <div class="legend-item">📘 Self studied</div>
+        <div class="legend-item">⚡ Revised</div>
+        <div class="legend-item">🔥 Mastered</div>
+      </div>
+      <div class="sec-row">
+        <span class="sec-title">Chapters</span>
+        <button class="btn-sm" onclick="showAddCh()">+ Add</button>
+      </div>
+      <div id="addChRow" style="display:none;" class="add-inline">
+        <input class="input" id="newChInput" placeholder="Chapter name" onkeydown="if(event.key==='Enter')saveCh();if(event.key==='Escape')cancelCh();"/>
+        <button class="btn-sm" onclick="saveCh()">Save</button>
+      </div>
+      <div id="chList">
+        ${!sub.chapters.length?'<div class="empty">No chapters yet. Tap + Add.</div>':sub.chapters.map(ch=>{
+          const s=STATUSES[ch.status||0];
+          return `<div class="ch-row">
+            <div style="flex:1;"><div class="ch-name">${ch.name}</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+              <button class="status-btn" onclick="cycleStatus(${ch.id})">${s.e}</button>
+              <div class="status-label">${s.l}</div>
+            </div>
+            <button class="ch-del" onclick="deleteCh(${ch.id})">×</button>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="height:12px;"></div>
+      <button class="btn-danger" onclick="deleteSubject()">Delete Subject</button>
+    </div>`;
+}
+
+function showAddCh(){const r=document.getElementById('addChRow');if(r){r.style.display='flex';document.getElementById('newChInput').focus();}}
+function cancelCh(){const r=document.getElementById('addChRow');if(r){r.style.display='none';document.getElementById('newChInput').value='';}}
+function saveCh(){
+  const val=document.getElementById('newChInput').value.trim();
+  if(!val)return;
+  data.streams.find(s=>s.id===activeStreamId).subjects.find(s=>s.id===activeSubjectId).chapters.push({id:Date.now(),name:val,status:0});
+  document.getElementById('newChInput').value='';
+  save();renderChapters();
+}
+function cycleStatus(id){
+  const sub=data.streams.find(s=>s.id===activeStreamId).subjects.find(s=>s.id===activeSubjectId);
+  const ch=sub.chapters.find(c=>c.id===id);
+  ch.status=((ch.status||0)+1)%STATUSES.length;
+  save();renderChapters();
+}
+function deleteCh(id){
+  const sub=data.streams.find(s=>s.id===activeStreamId).subjects.find(s=>s.id===activeSubjectId);
+  sub.chapters=sub.chapters.filter(c=>c.id!==id);
+  save();renderChapters();
+}
+function deleteSubject(){
+  if(!confirm('Delete this subject?'))return;
+  data.streams.find(s=>s.id===activeStreamId).subjects=data.streams.find(s=>s.id===activeStreamId).subjects.filter(s=>s.id!==activeSubjectId);
+  save();goBack();
+}
+
+// STREAMS
+function saveStream(){
+  const name=document.getElementById('newStreamName').value.trim();
+  if(!name)return;
+  data.streams.push({id:Date.now(),name,subjects:[]});
+  document.getElementById('newStreamName').value='';
+  save();renderOverview();closeModal('addStreamModal');
+}
+function deleteStream(id){
+  if(!confirm('Delete this stream and everything in it?'))return;
+  data.streams=data.streams.filter(s=>s.id!==id);
+  save();renderOverview();
+}
+
+// SUBJECTS
+function saveSubject(){
+  const name=document.getElementById('newSubName').value.trim();
+  if(!name)return;
+  data.streams.find(s=>s.id===activeStreamId).subjects.push({id:Date.now(),name,chapters:[]});
+  document.getElementById('newSubName').value='';
+  save();renderSubjects();closeModal('addSubjectModal');
+}
+
+// GOALS
+function openGoal(type){
+  activeGoalType=type;
+  document.getElementById('goalTitle').textContent=type==='today'?"📌 Today's Goal":"🎯 Monthly Target";
+  document.getElementById('goalInput').value=type==='today'?data.todayGoal:data.monthlyGoal;
+  openModal('goalModal');
+}
+function saveGoal(){
+  const val=document.getElementById('goalInput').value.trim();
+  if(activeGoalType==='today')data.todayGoal=val;else data.monthlyGoal=val;
+  save();renderOverview();closeModal('goalModal');
+}
+
+// COUNTDOWNS
+function openCDModal(){
+  document.getElementById('cdBInput').value=data.boardsDate;
+  document.getElementById('cdCInput').value=data.caDate;
+  openModal('cdModal');
+}
+function saveCDs(){
+  data.boardsDate=document.getElementById('cdBInput').value;
+  data.caDate=document.getElementById('cdCInput').value;
+  save();renderOverview();closeModal('cdModal');
+}
+
+// TESTS
+function popSubSels(){
+  const subs=allSubjects();
+  const opts=subs.map(s=>`<option value="${s.id}">${s.streamName} — ${s.name}</option>`).join('');
+  ['testSubject','examSubject'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+}
+function saveTest(){
+  const name=document.getElementById('testName').value.trim();
+  const date=document.getElementById('testDate').value;
+  if(!name||!date)return;
+  data.tests.push({id:Date.now(),name,date,subjectId:document.getElementById('testSubject').value,notes:document.getElementById('testNotes').value.trim()});
+  document.getElementById('testName').value='';document.getElementById('testDate').value='';document.getElementById('testNotes').value='';
+  save();renderTests();closeModal('addTestModal');
+}
+function renderTests(){
+  const el=document.getElementById('tabTests');
+  data.tests=data.tests||[];
+  if(!data.tests.length){el.innerHTML='<div style="padding-top:14px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><div><div class="sec-title">Weekly Tests</div><div style="font-size:12px;color:var(--text3);margin-top:2px;">Track upcoming class tests</div></div></div><div class="empty" style="margin-top:32px;">No tests yet. Tap + to add one.</div></div>';return;}
+  const sorted=[...data.tests].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  el.innerHTML='<div style="padding-top:14px;">'+sorted.map(t=>{
+    const d=daysUntil(t.date);
+    let cc='',bc='b-ok',bl=d!==null?d+' days':'—';
+    if(d===0){cc='urgent';bc='b-urgent';bl='TODAY 🔥';}
+    else if(d!==null&&d<0){bl='Done';}
+    else if(d!==null&&d<=2){cc='urgent';bc='b-urgent';bl=d+'d 🔥';}
+    else if(d!==null&&d<=5){cc='soon';bc='b-soon';}
+    return `<div class="test-card ${cc}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><div class="test-name">${t.name}</div><div class="test-sub">${t.notes||''}</div></div>
+        <span class="test-badge ${bc}">${bl}</span>
+      </div>
+      <div class="test-date">📅 ${fmtDate(t.date)}</div>
+      <div style="margin-top:10px;"><button class="btn-outline-sm" style="font-size:11px;" onclick="deleteTest(${t.id})">Delete</button></div>
+    </div>`;
+  }).join('')+'</div>';
+}
+function deleteTest(id){data.tests=data.tests.filter(t=>t.id!==id);save();renderTests();}
+
+// EXAMS
+function saveExam(){
+  const name=document.getElementById('examName').value.trim();
+  const date=document.getElementById('examDate').value;
+  if(!name||!date)return;
+  data.exams.push({id:Date.now(),name,date,subjectId:document.getElementById('examSubject').value,topics:[]});
+  document.getElementById('examName').value='';document.getElementById('examDate').value='';
+  save();renderExams();closeModal('addExamModal');
+}
+function renderExams(){
+  const el=document.getElementById('tabPortions');
+  if(!data.exams.length){el.innerHTML='<div style="padding-top:14px;"><div class="empty" style="margin-top:32px;">No exams yet. Tap + to add one.</div></div>';return;}
+  el.innerHTML='<div style="padding-top:14px;">'+data.exams.map(ex=>{
+    const d=daysUntil(ex.date);
+    const total=ex.topics.length,done=ex.topics.filter(t=>t.done).length;
+    const pct=total?Math.round(done/total*100):0;
+    let uc='u-ok',ul=d!==null?d+' days':'—';
+    if(d!==null&&d<=7){uc='u-hot';ul=d<=0?'Exam!':d+'d 🔥';}
+    else if(d!==null&&d<=21){uc='u-mid';}
+    const bc=pct>=80?'#6a9e6a':pct>=40?'#c8a040':'#c8a96e';
+    return `<div class="exam-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><div class="exam-name">${ex.name}</div><div style="font-size:12px;color:var(--text3);margin-top:2px;">${fmtDate(ex.date)}</div></div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span class="urgency ${uc}">${ul}</span>
+          <button onclick="deleteExam(${ex.id})" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;">×</button>
+        </div>
+      </div>
+      <div class="exam-prog-row">
+        <div class="exam-bar-wrap"><div class="exam-bar" style="width:${pct}%;background:${bc}"></div></div>
+        <div class="exam-pct">${pct}%</div>
+      </div>
+      ${ex.topics.map(t=>`<div class="topic-row">
+        <div class="topic-check ${t.done?'done':''}" onclick="toggleTopic(${ex.id},${t.id})">${t.done?'<span style="color:#0f0e0c;font-size:11px;font-weight:800;">✓</span>':''}</div>
+        <span class="topic-name ${t.done?'done':''}">${t.name}</span>
+        <button class="topic-del" onclick="deleteTopic(${ex.id},${t.id})">×</button>
+      </div>`).join('')}
+      <div style="margin-top:10px;"><button class="btn-outline-sm" style="font-size:12px;" onclick="openAddTopic(${ex.id})">+ Add Topic</button></div>
+    </div>`;
+  }).join('')+'</div>';
+}
+function deleteExam(id){if(!confirm('Delete?'))return;data.exams=data.exams.filter(e=>e.id!==id);save();renderExams();}
+function openAddTopic(id){activeExamId=id;document.getElementById('newTopicInput').value='';openModal('addTopicModal');}
+function saveTopic(){
+  const val=document.getElementById('newTopicInput').value.trim();
+  if(!val)return;
+  data.exams.find(e=>e.id===activeExamId).topics.push({id:Date.now(),name:val,done:false});
+  save();renderExams();closeModal('addTopicModal');
+}
+function toggleTopic(exId,tId){const t=data.exams.find(e=>e.id===exId).topics.find(t=>t.id===tId);t.done=!t.done;save();renderExams();}
+function deleteTopic(exId,tId){const ex=data.exams.find(e=>e.id===exId);ex.topics=ex.topics.filter(t=>t.id!==tId);save();renderExams();}
+
+// NOTIFS
+function checkNotifs(){
+  const msgs=[];
+  if(data.todayGoal)msgs.push({icon:'📌',title:"Today's Goal",msg:data.todayGoal});
+  (data.tests||[]).forEach(t=>{const d=daysUntil(t.date);if(d===0)msgs.push({icon:'🔥',title:'Test TODAY!',msg:t.name});else if(d===1)msgs.push({icon:'⚠️',title:'Test Tomorrow',msg:t.name});});
+  data.exams.forEach(ex=>{const d=daysUntil(ex.date);if(d===0)msgs.push({icon:'🚨',title:'Exam TODAY!',msg:ex.name});else if(d===1)msgs.push({icon:'⚠️',title:'Exam Tomorrow',msg:ex.name});});
+  if(msgs.length){
+    const m=msgs[0];
+    document.getElementById('notifIcon').textContent=m.icon;
+    document.getElementById('notifTitle').textContent=m.title;
+    document.getElementById('notifMsg').textContent=m.msg+(msgs.length>1?' (+'+(msgs.length-1)+' more)':'');
+    setTimeout(()=>document.getElementById('notifBanner').classList.add('show'),1200);
+    setTimeout(()=>document.getElementById('notifBanner').classList.remove('show'),6000);
+  }
+}
+function closeNotif(){document.getElementById('notifBanner').classList.remove('show');}
+
+// MODALS
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+</script>
+</body>
+</html>
